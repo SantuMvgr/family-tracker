@@ -1,6 +1,11 @@
 package com.mycompany.webapp.action;
 
 import com.opensymphony.xwork2.Preparable;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.core.util.MultivaluedMapImpl;
+
 import org.apache.struts2.ServletActionContext;
 import com.mycompany.Constants;
 import com.mycompany.dao.SearchException;
@@ -19,6 +24,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.MultivaluedMap;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +39,44 @@ public class UserAction extends BaseAction implements Preparable {
     private User user;
     private String id;
     private String query;
+    private String weatherInfo;
+    private String topNewsFeed;
+    private String businessNewsFeed;
+    private String sportsNewsFeed;
 
-    /**
+    public String getTopNewsFeed() {
+		return topNewsFeed;
+	}
+
+	public void setTopNewsFeed(String topNewsFeed) {
+		this.topNewsFeed = topNewsFeed;
+	}
+
+	public String getBusinessNewsFeed() {
+		return businessNewsFeed;
+	}
+
+	public void setBusinessNewsFeed(String businessNewsFeed) {
+		this.businessNewsFeed = businessNewsFeed;
+	}
+
+	public String getSportsNewsFeed() {
+		return sportsNewsFeed;
+	}
+
+	public void setSportsNewsFeed(String sportsNewsFeed) {
+		this.sportsNewsFeed = sportsNewsFeed;
+	}
+
+	public String getWeatherInfo() {
+		return weatherInfo;
+	}
+
+	public void setWeatherInfo(String weatherInfo) {
+		this.weatherInfo = weatherInfo;
+	}
+
+	/**
      * Grab the entity from the database before populating with request parameters
      */
     public void prepare() {
@@ -244,6 +287,64 @@ public class UserAction extends BaseAction implements Preparable {
             users = userManager.getUsers();
         }
         return SUCCESS;
+    }
+    
+    public String showUserTracker() {
+    	
+    	user = userManager.getUser(id);
+    	
+    	Client client = Client.create();
+    	WebResource webResource = client.resource("http://openweathermap.org/data/2.5/weather");
+    	MultivaluedMap queryParams = new MultivaluedMapImpl();
+    	queryParams.add("q", user.getAddress().getCity());
+    	queryParams.add("APPID", "8c737ea99f3578ff6483971b4df34bd5");
+    	queryParams.add("type", "json");
+    	queryParams.add("units", "metric");
+    	ClientResponse response = webResource.queryParams(queryParams).accept("application/json").get(ClientResponse.class);
+    	
+    	if(response.getStatus() != 200) {
+    		throw new RuntimeException("Failed with HTTP Code - " + response.getStatus());
+    	}
+    	
+    	weatherInfo  = response.getEntity(String.class);
+    	
+    	getNewsFeeds();
+    	
+    	System.out.println(weatherInfo);
+    	
+    	return SUCCESS;
+    }
+    
+    private void getNewsFeeds() {
+    	
+    	Client client = Client.create();
+    	//Category - 'Top News', id - 26 
+    	WebResource webResource = client.resource("http://api.feedzilla.com/v1/categories/26/articles.json?culture_code=en_in&count=3");
+    	ClientResponse response = webResource.accept("application/json").get(ClientResponse.class);
+    	
+    	if(response.getStatus() != 200) {
+    		throw new RuntimeException("Failed with HTTP Code - " + response.getStatus());
+    	}
+    	topNewsFeed = response.getEntity(String.class);
+    	
+    	//Category - 'Business', id - 22
+    	webResource = client.resource("http://api.feedzilla.com/v1/categories/22/articles.json?culture_code=en_in&count=3");
+    	response = webResource.accept("application/json").get(ClientResponse.class);
+    	
+    	if(response.getStatus() != 200) {
+    		throw new RuntimeException("Failed with HTTP Code - " + response.getStatus());
+    	}
+    	businessNewsFeed = response.getEntity(String.class);
+    	
+    	//Category - 'Sports', id - 27
+    	webResource = client.resource("http://api.feedzilla.com/v1/categories/27/articles.json?culture_code=en_in&count=3");
+    	response = webResource.accept("application/json").get(ClientResponse.class);
+    	
+    	if(response.getStatus() != 200) {
+    		throw new RuntimeException("Failed with HTTP Code - " + response.getStatus());
+    	}
+    	sportsNewsFeed = response.getEntity(String.class);
+    	
     }
 
 }

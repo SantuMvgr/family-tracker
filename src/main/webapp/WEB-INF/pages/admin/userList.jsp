@@ -33,7 +33,7 @@
         <display:column property="username" escapeXml="true" sortable="true" titleKey="user.username" style="width: 25%"
                         url="/editUser?from=list" paramId="id" paramProperty="id"/>
         <display:column property="fullName" escapeXml="true" sortable="true" titleKey="activeUsers.fullName"
-                        style="width: 34%"/>
+                        url="/viewUser" paramId="id" paramProperty="id" style="width: 34%"/>
         <display:column property="email" sortable="true" titleKey="user.email" style="width: 25%" autolink="true"
                         media="html"/>
         <display:column property="email" titleKey="user.email" media="csv xml excel pdf"/>

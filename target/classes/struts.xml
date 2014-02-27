@@ -113,6 +113,9 @@
         </action>
 
         <!-- Add additional actions here -->
+        <action name="viewUser" class="com.mycompany.webapp.action.UserAction" method="showUserTracker">
+            <result name="success">/WEB-INF/pages/viewUser.jsp</result>
+        </action> 
     </package>
 
     <!-- Actions in this package will be prefixed with /admin/ -->

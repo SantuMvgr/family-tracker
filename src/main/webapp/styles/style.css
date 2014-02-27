@@ -266,3 +266,8 @@ span.pagelinks {
         margin-top: 0;
     }
 }
+
+
+table.weather td {
+	text-align: right;
+}
